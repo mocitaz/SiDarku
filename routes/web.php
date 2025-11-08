@@ -8,6 +8,7 @@ use App\Livewire\CycleTracker;
 use App\Livewire\ProgressChart;
 use App\Livewire\EducationList;
 use App\Livewire\ProfilePage;
+use App\Livewire\SettingsPage;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Password;
 
@@ -236,6 +237,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/education', EducationList::class)->name('education');
     Route::get('/education/{slug}', [EducationController::class, 'show'])->name('education.show');
     Route::get('/profile', ProfilePage::class)->name('profile');
+    Route::get('/settings', SettingsPage::class)->name('settings');
     
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -262,6 +264,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/educations/{id}/edit', [\App\Http\Controllers\AdminController::class, 'editEducation'])->name('admin.education.edit');
         Route::put('/educations/{id}', [\App\Http\Controllers\AdminController::class, 'updateEducation'])->name('admin.education.update');
         Route::delete('/educations/{id}', [\App\Http\Controllers\AdminController::class, 'deleteEducation'])->name('admin.education.delete');
+        Route::get('/ttd-reminder-logs', [\App\Http\Controllers\AdminController::class, 'ttdReminderLogs'])->name('admin.ttd-reminder-logs');
+        Route::post('/ttd-reminder-logs/check-status', [\App\Http\Controllers\AdminController::class, 'checkReminderStatus'])->name('admin.ttd-reminder-logs.check-status');
         Route::post('/logout', [\App\Http\Controllers\AdminController::class, 'logout'])->name('admin.logout');
     });
 });

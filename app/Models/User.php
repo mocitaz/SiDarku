@@ -27,6 +27,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'occupation',
         'marital_status',
         'role',
+        'email_ttd_reminder_enabled',
     ];
 
     /**
@@ -50,6 +51,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'date_of_birth' => 'date',
+            'email_ttd_reminder_enabled' => 'boolean',
         ];
     }
 
@@ -67,6 +69,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function cycles()
     {
         return $this->hasMany(Cycle::class);
+    }
+
+    /**
+     * Get the TTD reminder logs for the user.
+     */
+    public function ttdReminderLogs()
+    {
+        return $this->hasMany(TtdReminderLog::class);
     }
 
     /**

@@ -6,11 +6,14 @@ use App\Models\User;
 use App\Models\Education;
 use App\Models\TTDLog;
 use App\Models\Cycle;
+use App\Models\TtdReminderLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -416,6 +419,182 @@ class AdminController extends Controller
         $education->delete();
 
         return redirect()->route('admin.educations')->with('success', 'Artikel edukasi berhasil dihapus.');
+    }
+
+    /**
+     * Show TTD reminder logs
+     */
+    public function ttdReminderLogs(Request $request)
+    {
+        $query = TtdReminderLog::with('user')->latest('reminder_date')->latest('created_at');
+
+        // Filter by status
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by date
+        if ($request->has('date') && $request->date) {
+            $query->whereDate('reminder_date', $request->date);
+        }
+
+        // Search
+        if ($request->has('search') && $request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('user_name', 'like', '%' . $request->search . '%')
+                  ->orWhere('user_email', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $logs = $query->paginate(50);
+
+        // Statistics
+        $stats = [
+            'total_sent' => TtdReminderLog::where('status', 'sent')->count(),
+            'total_skipped' => TtdReminderLog::where('status', 'skipped')->count(),
+            'total_disabled' => TtdReminderLog::where('status', 'disabled')->count(),
+            'today_sent' => TtdReminderLog::where('status', 'sent')
+                ->whereDate('reminder_date', today())
+                ->count(),
+            'today_disabled' => TtdReminderLog::where('status', 'disabled')
+                ->whereDate('reminder_date', today())
+                ->count(),
+        ];
+
+        // Users who disabled reminders
+        $usersWithDisabledReminders = User::where('email_ttd_reminder_enabled', false)
+            ->where('role', 'user')
+            ->get();
+
+        // Check reminder status
+        $reminderStatus = $this->getReminderStatus();
+
+        return view('admin.ttd-reminder-logs', compact('logs', 'stats', 'usersWithDisabledReminders', 'reminderStatus'));
+    }
+
+    /**
+     * Check reminder status (refresh)
+     */
+    public function checkReminderStatus(Request $request)
+    {
+        $status = $this->getReminderStatus();
+
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json($status);
+        }
+
+        return redirect()->route('admin.ttd-reminder-logs')->with('reminder_status', $status);
+    }
+
+    /**
+     * Get current reminder status
+     */
+    private function getReminderStatus()
+    {
+        Carbon::setLocale('id');
+        $now = Carbon::now('Asia/Jakarta');
+        $today = Carbon::today('Asia/Jakarta');
+        $scheduledTime = Carbon::today('Asia/Jakarta')->setTime(12, 0, 0); // 12:00 WIB
+
+        // Check today's logs
+        $todayLogs = TtdReminderLog::whereDate('reminder_date', $today)->get();
+        $todaySent = $todayLogs->where('status', 'sent')->count();
+        $todaySkipped = $todayLogs->where('status', 'skipped')->count();
+        $todayDisabled = $todayLogs->where('status', 'disabled')->count();
+
+        // Check if already sent today
+        $alreadySent = $todaySent > 0;
+
+        // Check if it's time to send
+        $isTimeToSend = $now->greaterThanOrEqualTo($scheduledTime);
+        $isBeforeSchedule = $now->lessThan($scheduledTime);
+
+        // Calculate time until next send
+        $timeUntilSend = null;
+        $countdown = null;
+        
+        // Determine next scheduled time
+        if ($alreadySent) {
+            // If already sent today, calculate countdown to tomorrow's scheduled time
+            $nextScheduledTime = $scheduledTime->copy()->addDay();
+        } else {
+            // If not sent yet, calculate countdown to today's scheduled time
+            if ($isTimeToSend) {
+                // If it's past 12:00 but not sent yet, countdown to tomorrow
+                $nextScheduledTime = $scheduledTime->copy()->addDay();
+            } else {
+                // Before 12:00, countdown to today's scheduled time
+                $nextScheduledTime = $scheduledTime;
+            }
+        }
+        
+        // Always calculate countdown
+        $diff = $now->diff($nextScheduledTime);
+        $totalSeconds = $now->diffInSeconds($nextScheduledTime, false);
+        
+        // Convert to hours, minutes, seconds
+        $hours = floor($totalSeconds / 3600);
+        $minutes = floor(($totalSeconds % 3600) / 60);
+        $seconds = $totalSeconds % 60;
+        
+        $countdown = [
+            'hours' => str_pad($hours, 2, '0', STR_PAD_LEFT),
+            'minutes' => str_pad($minutes, 2, '0', STR_PAD_LEFT),
+            'seconds' => str_pad($seconds, 2, '0', STR_PAD_LEFT),
+            'total_seconds' => $totalSeconds,
+        ];
+        
+        if ($isBeforeSchedule) {
+            $timeUntilSend = $now->diffForHumans($scheduledTime, true);
+        } elseif (!$alreadySent && $isTimeToSend) {
+            $timeUntilSend = 'Sudah waktunya!';
+        }
+
+        // Get last sent time
+        $lastSent = TtdReminderLog::where('status', 'sent')
+            ->whereDate('reminder_date', $today)
+            ->latest('created_at')
+            ->first();
+
+        // Calculate next scheduled datetime in ISO format for JavaScript
+        $nextScheduledDatetime = $nextScheduledTime->copy()->setTimezone('Asia/Jakarta');
+        
+        $status = [
+            'current_time' => $now->format('H:i:s'),
+            'current_date' => $now->format('d M Y'),
+            'scheduled_time' => $scheduledTime->format('H:i'),
+            'scheduled_datetime' => $scheduledTime->copy()->setTimezone('Asia/Jakarta')->toIso8601String(),
+            'next_scheduled_datetime' => $nextScheduledDatetime->toIso8601String(),
+            'timezone' => 'WIB (Asia/Jakarta)',
+            'is_time_to_send' => $isTimeToSend,
+            'is_before_schedule' => $isBeforeSchedule,
+            'already_sent' => $alreadySent,
+            'time_until_send' => $timeUntilSend,
+            'countdown' => $countdown,
+            'today_sent' => $todaySent,
+            'today_skipped' => $todaySkipped,
+            'today_disabled' => $todayDisabled,
+            'last_sent_at' => $lastSent ? $lastSent->created_at->setTimezone('Asia/Jakarta')->format('H:i:s') : null,
+            'message' => $this->getStatusMessage($alreadySent, $isTimeToSend, $isBeforeSchedule, $timeUntilSend, $todaySent),
+        ];
+
+        return $status;
+    }
+
+    /**
+     * Get status message
+     */
+    private function getStatusMessage($alreadySent, $isTimeToSend, $isBeforeSchedule, $timeUntilSend, $todaySent)
+    {
+        if ($alreadySent) {
+            return "Hari ini sudah terkirim {$todaySent} email reminder pada jam 12:00 WIB. Sistem akan mengirim lagi besok pada jam yang sama.";
+        } elseif ($isTimeToSend) {
+            return "Sistem akan mengirim reminder otomatis pada jam 12:00 WIB. Email akan terkirim dalam beberapa saat.";
+        } elseif ($isBeforeSchedule) {
+            return "Email reminder akan dikirim otomatis oleh sistem pada jam 12:00 WIB. Silakan tunggu sampai waktu yang ditentukan.";
+        } else {
+            return "Status reminder sedang dicek...";
+        }
     }
 
     /**

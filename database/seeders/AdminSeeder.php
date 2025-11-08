@@ -23,6 +23,7 @@ class AdminSeeder extends Seeder
                 'password' => Hash::make('admin123'),
                 'role' => 'admin',
                 'email_verified_at' => now(),
+                'email_ttd_reminder_enabled' => false, // Admin tidak perlu email reminder
             ]);
             $this->command->info('Admin user updated successfully!');
         } else {
@@ -33,6 +34,7 @@ class AdminSeeder extends Seeder
                 'password' => Hash::make('admin123'),
                 'role' => 'admin',
                 'email_verified_at' => now(),
+                'email_ttd_reminder_enabled' => false, // Admin tidak perlu email reminder
             ]);
             $this->command->info('Admin user created successfully!');
         }

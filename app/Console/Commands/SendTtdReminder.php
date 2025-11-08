@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\User;
 use App\Models\TTDLog;
 use App\Models\Cycle;
+use App\Models\TtdReminderLog;
 use App\Mail\TTDReminderMail;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -40,8 +41,28 @@ class SendTtdReminder extends Command
         
         $users = User::where('role', 'user')->get();
         $reminderCount = 0;
+        $skippedCount = 0;
+        $disabledCount = 0;
 
         foreach ($users as $user) {
+            // Check if user has disabled email reminders
+            // Default true jika null (untuk kompatibilitas dengan user lama)
+            $isEnabled = $user->email_ttd_reminder_enabled !== null 
+                ? (bool) $user->email_ttd_reminder_enabled 
+                : true;
+            
+            if (!$isEnabled) {
+                $this->logReminder($user, 'disabled', 'User has disabled email reminders', false);
+                $disabledCount++;
+                $this->line("  → Skipped {$user->name}: Email reminders disabled");
+                continue;
+            }
+            
+            // Jika null, set ke true di database (update untuk user lama)
+            if ($user->email_ttd_reminder_enabled === null) {
+                $user->update(['email_ttd_reminder_enabled' => true]);
+            }
+
             // Check if user already checked in today
             $todayLog = TTDLog::where('user_id', $user->id)
                 ->whereDate('log_date', $today)
@@ -49,7 +70,10 @@ class SendTtdReminder extends Command
                 ->first();
 
             if ($todayLog) {
-                continue; // User already consumed TTD today
+                $this->logReminder($user, 'skipped', 'User already checked in today', false);
+                $skippedCount++;
+                $this->line("  → Skipped {$user->name}: Already checked in today");
+                continue;
             }
 
             // Check if user is menstruating (intensive reminder - send daily)
@@ -59,25 +83,33 @@ class SendTtdReminder extends Command
             // If not menstruating, send reminder weekly (7 days since last consumption)
             if ($isMenstruating || $this->isWeeklyReminderTime($user, $today)) {
                 $this->sendReminder($user, $isMenstruating);
+                $this->logReminder($user, 'sent', null, $isMenstruating);
                 $reminderCount++;
-                $this->line("  → Reminder sent to {$user->name} ({$user->email})");
+                $this->line("  → Reminder sent to {$user->name} ({$user->email})" . ($isMenstruating ? ' [Intensive]' : ''));
             } else {
                 $lastLog = TTDLog::where('user_id', $user->id)
                     ->where('is_consumed', true)
                     ->orderBy('log_date', 'desc')
                     ->first();
                 
+                $reason = 'Not time for reminder yet';
                 if ($lastLog) {
                     $daysSince = Carbon::parse($lastLog->log_date)->diffInDays($today);
-                    $this->line("  → Skipped {$user->name}: Last consumption {$daysSince} days ago (need 7 days)");
+                    $reason = "Last consumption {$daysSince} days ago (need 7 days)";
                 } else {
-                    $this->line("  → Skipped {$user->name}: No previous consumption");
+                    $reason = 'No previous consumption';
                 }
+                
+                $this->logReminder($user, 'skipped', $reason, false);
+                $skippedCount++;
+                $this->line("  → Skipped {$user->name}: {$reason}");
             }
         }
 
         $this->info("Sent {$reminderCount} reminders.");
-        Log::info("TTD Reminder: Sent {$reminderCount} reminders on " . $today->toDateString());
+        $this->info("Skipped {$skippedCount} reminders.");
+        $this->info("Disabled {$disabledCount} reminders.");
+        Log::info("TTD Reminder: Sent {$reminderCount}, Skipped {$skippedCount}, Disabled {$disabledCount} reminders on " . $today->toDateString());
         
         return Command::SUCCESS;
     }
@@ -134,6 +166,23 @@ class SendTtdReminder extends Command
             Log::info("TTD Reminder email sent to {$user->email}");
         } catch (\Exception $e) {
             Log::error("Failed to send TTD reminder to {$user->email}: " . $e->getMessage());
+            throw $e;
         }
+    }
+
+    /**
+     * Log reminder activity
+     */
+    protected function logReminder(User $user, string $status, ?string $reason = null, bool $isIntensive = false): void
+    {
+        TtdReminderLog::create([
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'user_name' => $user->name,
+            'is_intensive' => $isIntensive,
+            'status' => $status,
+            'reason' => $reason,
+            'reminder_date' => Carbon::today('Asia/Jakarta'),
+        ]);
     }
 }

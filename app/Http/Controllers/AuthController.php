@@ -59,6 +59,7 @@ class AuthController extends Controller
             'date_of_birth' => $validated['date_of_birth'],
             'password' => Hash::make($validated['password']),
             'role' => 'user',
+            'email_ttd_reminder_enabled' => true, // Default aktif untuk user baru
         ]);
 
         // Send verification email
