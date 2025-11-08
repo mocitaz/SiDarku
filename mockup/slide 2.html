@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiDarku - Splash</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .smartphone {
+            width: 375px;
+            height: 812px;
+            background-color: #FFFFFF;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 10px solid #111;
+            position: relative;
+            /* Flexbox untuk menengahkan konten */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .splash-content {
+            text-align: center;
+        }
+        /* Placeholder Logo */
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, #FFC0CB, #FF69B4); /* Pink Gradient */
+            border-radius: 25px; /* Tetesan darah/inisial S bisa di-stylize di sini */
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            /* Ganti 'S' dengan logo Anda */
+            content: 'S'; 
+        }
+        .app-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="smartphone">
+        <div class="splash-content">
+            <div class="logo">S</div>
+            <h1 class="app-title">SiDarku</h1>
+        </div>
+    </div>
+</body>
+</html>

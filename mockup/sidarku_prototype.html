@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiDarku Prototype</title>
+    <style>
+        /* Gaya Dasar Halaman */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333333;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Kontainer Mockup Smartphone */
+        .smartphone {
+            width: 375px;
+            height: 812px;
+            background-color: #FFFFFF;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 10px solid #111;
+            position: relative;
+        }
+
+        /* Konten Aplikasi (Bisa di-scroll) */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-top: 40px; /* Jarak dari atas */
+        }
+
+        /* Header dengan Sapaan */
+        .header {
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0;
+            color: #1a1a1a;
+        }
+        .header p {
+            font-size: 16px;
+            color: #888;
+            margin: 4px 0 0;
+        }
+
+        /* Kartu Status Siklus */
+        .status-card {
+            background-color: #f9f9f9;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .status-card h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #555;
+        }
+
+        /* Indikator 3 Warna */
+        .cycle-indicator {
+            display: flex;
+            width: 100%;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .cycle-segment {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+            opacity: 0.3; /* Non-aktif */
+        }
+        .segment-haid { background-color: #FF6347; } /* Merah Tomat */
+        .segment-prahaid { background-color: #FFB6C1; } /* Pink Muda */
+        .segment-nonhaid { background-color: #B0B0B0; } /* Abu-abu */
+        
+        /* Status Aktif */
+        .cycle-segment.active {
+            opacity: 1.0;
+            transform: scale(1.05); /* Sedikit membesar */
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        /* Label di bawah indikator */
+        .indicator-labels {
+            display: flex;
+            justify-content: space-around;
+            font-size: 12px;
+            color: #777;
+        }
+        .indicator-labels div {
+            flex: 1;
+            text-align: center;
+            font-weight: 500;
+        }
+        .indicator-labels .label-nonhaid {
+            font-weight: 700;
+            color: #333; /* Label aktif */
+        }
+
+        .status-card p.prediction {
+            font-size: 14px;
+            color: #333;
+            text-align: center;
+            margin-top: 16px;
+            margin-bottom: 0;
+            background: #eef;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        /* Kartu Aksi (Check-in) */
+        .action-card {
+            background-color: #FFF0F5; /* Latar belakang pink sangat muda */
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .action-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+
+        /* Tombol Gradien Pink (Rounded Rectangle) */
+        .btn-gradient {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px; /* Rounded rectangle */
+            background: linear-gradient(90deg, #FFC0CB, #FF69B4); /* Pink Gradient */
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            box-sizing: border-box; /* Untuk padding 100% */
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.5);
+        }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 70px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #f0f0f0;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.03);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            color: #999;
+            cursor: pointer;
+        }
+        .nav-item.active {
+            color: #FF69B4; /* Warna pink Aksen */
+        }
+        .nav-item span {
+            font-size: 24px; /* Ukuran emoji/ikon */
+            margin-bottom: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="smartphone">
+        
+        <div class="app-content">
+            
+            <div class="header">
+                <h1>Hai, Siti!</h1>
+                <p>Selamat datang kembali.</p>
+            </div>
+
+            <div class="status-card">
+                <h2>Status Siklusmu Saat Ini</h2>
+                
+                <div class="cycle-indicator">
+                    <div class="cycle-segment segment-haid"></div>
+                    <div class="cycle-segment segment-prahaid"></div>
+                    <div class="cycle-segment segment-nonhaid active"></div>
+                </div>
+                
+                <div class="indicator-labels">
+                    <div class="label-haid">Haid</div>
+                    <div class="label-prahaid">Pra-Haid</div>
+                    <div class="label-nonhaid">Non-Haid</div>
+                </div>
+
+                <p class="prediction">Perkiraan haid berikutnya: <strong>8 hari lagi</strong></p>
+            </div>
+
+            <div class="action-card">
+                <h2>Sudah Minum TTD Minggu Ini?</h2>
+                <a href="#" class="btn-gradient">Check-in Sekarang</a>
+            </div>
+
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <span>🏠</span>
+                Home
+            </div>
+            <div class="nav-item">
+                <span>📊</span>
+                Progress
+            </div>
+            <div class="nav-item">
+                <span>📖</span>
+                Edukasi
+            </div>
+            <div class="nav-item">
+                <span>👤</span>
+                Profil
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

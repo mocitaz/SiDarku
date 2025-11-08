@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiDarku - Progress</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .smartphone {
+            width: 375px;
+            height: 812px;
+            background-color: #FFFFFF;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 10px solid #111;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .app-header {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .app-header .back-btn {
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+            color: #333;
+        }
+        .app-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 auto;
+            padding-right: 24px;
+        }
+        .app-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .calendar-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+        .day-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+        }
+        .day {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 0;
+            border-radius: 50%;
+        }
+        .day.checked {
+            background: linear-gradient(90deg, #FFC0CB, #FF69B4);
+            color: white;
+            font-weight: 700;
+        }
+        .day.other-month {
+            color: #ccc;
+        }
+        .stats-grid {
+            margin-top: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .stat-card {
+            background-color: #f9f9f9;
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .stat-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #777;
+            margin: 0 0 8px;
+        }
+        .stat-card .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+        }
+        .stat-card .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .stat-card .progress-fill {
+            width: 75%;
+            height: 100%;
+            background: linear-gradient(90deg, #FFC0CB, #FF69B4);
+        }
+    </style>
+</head>
+<body>
+    <div class="smartphone">
+        <div class="app-header">
+            <a href="#" class="back-btn">&lt;</a>
+            <h1>Progress Kepatuhan</h1>
+        </div>
+        <div class="app-content">
+            <div class="calendar-header">
+                <h2>November 2025</h2>
+                <div>&lt; &gt;</div>
+            </div>
+            <div class="calendar-grid">
+                <div class="day-name">S</div><div class="day-name">S</div><div class="day-name">R</div>
+                <div class="day-name">K</div><div class="day-name">J</div><div class="day-name">S</div>
+                <div class="day-name">M</div>
+                <div class="day other-month">27</div><div class="day other-month">28</div><div class="day other-month">29</div>
+                <div class="day other-month">30</div><div class="day other-month">31</div>
+                <div class="day checked">1</div> <div class="day">2</div>
+                <div class="day">3</div><div class="day">4</div><div class="day">5</div>
+                <div class="day">6</div>
+                <div class="day checked">7</div> <div class="day">8</div><div class="day">9</div>
+                <div class="day">10</div><div class="day">11</div><div class="day">12</div>
+                <div class="day">13</div><div class="day">14</div><div class="day">15</div>
+                <div class="day">16</div><div class="day">17</div><div class="day">18</div>
+                <div class="day">19</div><div class="day">20</div>
+                <div class="day checked">21</div> <div class="day">22</div><div class="day">23</div>
+                <div class="day">24</div><div class="day">25</div><div class="day">26</div>
+                <div class="day">27</div><div class="day">28</div><div class="day">29</div>
+                <div class="day">30</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Streak Saat Ini</h3>
+                    <div class="value">🔥 3 Minggu</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Kepatuhan Bulan Ini</h3>
+                    <div class="value">75%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

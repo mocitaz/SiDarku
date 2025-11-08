@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    
+    /* Custom SiDarku Colors */
+    --color-sidarku-primary: #ff79b8;
+    --color-sidarku-secondary: #feb4c8;
+    --color-sidarku-primary-dark: #ff4da6;
+    --color-sidarku-primary-light: #ffa5cf;
+}
+
+/* Custom Utility Classes */
+.bg-sidarku-primary {
+    background-color: var(--color-sidarku-primary);
+}
+
+.bg-sidarku-secondary {
+    background-color: var(--color-sidarku-secondary);
+}
+
+.bg-sidarku-primary-dark {
+    background-color: var(--color-sidarku-primary-dark);
+}
+
+.text-sidarku-primary {
+    color: var(--color-sidarku-primary);
+}
+
+.text-sidarku-secondary {
+    color: var(--color-sidarku-secondary);
+}
+
+.border-sidarku-primary {
+    border-color: var(--color-sidarku-primary);
+}
+
+.border-sidarku-secondary {
+    border-color: var(--color-sidarku-secondary);
+}
+
+.hover\:bg-sidarku-primary-dark:hover {
+    background-color: var(--color-sidarku-primary-dark);
+}
+
+.hover\:text-sidarku-primary:hover {
+    color: var(--color-sidarku-primary);
+}
+
+/* Gradient for logo text only */
+.text-gradient-sidarku {
+    background: linear-gradient(135deg, #ff79b8 0%, #feb4c8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiDarku - Login</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .smartphone {
+            width: 375px;
+            height: 812px;
+            background-color: #FFFFFF;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 10px solid #111;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .app-content {
+            flex: 1;
+            padding: 40px 24px;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #FFC0CB, #FF69B4);
+            border-radius: 15px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            content: 'S';
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .tab-btn {
+            flex: 1;
+            text-align: center;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #aaa;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-btn.active {
+            color: #333;
+            border-bottom: 3px solid #FF69B4;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .forgot-password {
+            display: block;
+            text-align: right;
+            font-size: 14px;
+            color: #FF69B4;
+            text-decoration: none;
+            margin-top: 8px;
+            margin-bottom: 24px;
+        }
+        .btn-gradient {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #FFC0CB, #FF69B4);
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            box-sizing: border-box;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="smartphone">
+        <div class="app-content">
+            <div class="logo-container">
+                <div class="logo">S</div>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab-btn active">Masuk</button>
+                <button class="tab-btn">Daftar</button>
+            </div>
+            
+            <form>
+                <div class="form-group">
+                    <label for="email">Email / No. Telepon</label>
+                    <input type="text" id="email" placeholder="Masukkan email atau no. telepon">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Masukkan password">
+                </div>
+                <a href="#" class="forgot-password">Lupa Password?</a>
+                
+                <a href="#" class="btn-gradient">Masuk</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
