@@ -37,10 +37,19 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'date_of_birth' => ['required', 'date', 'before:' . now()->subYears(10)->format('Y-m-d')],
-            'password' => ['required', 'string', 'confirmed', Password::min(8)],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
             'terms' => ['required', 'accepted'],
         ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email ini sudah terdaftar. Silakan gunakan email lain.',
+            'date_of_birth.required' => 'Tanggal lahir wajib diisi.',
             'date_of_birth.before' => 'Anda harus berusia minimal 10 tahun untuk menggunakan aplikasi ini.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password harus minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak sesuai.',
+            'terms.required' => 'Anda harus menyetujui ketentuan dan kebijakan privasi.',
             'terms.accepted' => 'Anda harus menyetujui ketentuan dan kebijakan privasi.',
         ]);
 

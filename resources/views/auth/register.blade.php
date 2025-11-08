@@ -113,26 +113,34 @@
                         <h1 class="text-2xl sm:text-3xl font-extrabold text-gradient-sidarku">SiDarku</h1>
                     </div>
                     <p class="text-gray-600 text-xs sm:text-sm">Buat akun baru</p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <span class="text-red-500">*</span> Field wajib diisi
+                    </p>
                 </div>
 
                 <!-- Title -->
                 <div class="mb-6 sm:mb-8 hidden lg:block">
                     <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Daftar Akun Baru</h2>
                     <p class="text-sm sm:text-base text-gray-600">Mulai perjalanan kesehatanmu hari ini</p>
+                    <p class="text-xs text-gray-500 mt-2">
+                        <span class="text-red-500">*</span> Menandakan field wajib diisi
+                    </p>
                 </div>
 
                 <!-- Error Messages -->
                 @if ($errors->any())
-                    <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4" id="error-notification">
                         <div class="flex items-start space-x-3">
                             <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                             </svg>
                             <div class="flex-1">
-                                <p class="text-sm font-semibold text-red-800">Pendaftaran Gagal</p>
-                                @foreach ($errors->all() as $error)
-                                    <p class="text-sm text-red-700">{{ $error }}</p>
-                                @endforeach
+                                <p class="text-sm font-semibold text-red-800 mb-2">Mohon perbaiki kesalahan berikut:</p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    @foreach ($errors->all() as $error)
+                                        <li class="text-sm text-red-700">{{ $error }}</li>
+                                    @endforeach
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -144,7 +152,9 @@
 
                     <!-- Name -->
                     <div>
-                        <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap</label>
+                        <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Nama Lengkap <span class="text-red-500">*</span>
+                        </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,15 +168,26 @@
                                 value="{{ old('name') }}"
                                 required 
                                 autofocus
-                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sidarku-primary focus:border-sidarku-primary transition-all"
+                                onblur="validateField('name')"
+                                class="w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-sidarku-primary focus:border-sidarku-primary transition-all {{ $errors->has('name') ? 'border-red-300 bg-red-50' : 'border-gray-300' }}"
                                 placeholder="Nama lengkap"
                             >
                         </div>
+                        @error('name')
+                            <p class="mt-2 text-sm text-red-600 flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                                <span>{{ $message }}</span>
+                            </p>
+                        @enderror
                     </div>
 
                     <!-- Email -->
                     <div>
-                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Email <span class="text-red-500">*</span>
+                        </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,15 +200,26 @@
                                 name="email" 
                                 value="{{ old('email') }}"
                                 required 
-                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sidarku-primary focus:border-sidarku-primary transition-all"
+                                onblur="validateField('email')"
+                                class="w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-sidarku-primary focus:border-sidarku-primary transition-all {{ $errors->has('email') ? 'border-red-300 bg-red-50' : 'border-gray-300' }}"
                                 placeholder="nama@email.com"
                             >
                         </div>
+                        @error('email')
+                            <p class="mt-2 text-sm text-red-600 flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                                <span>{{ $message }}</span>
+                            </p>
+                        @enderror
                     </div>
 
                     <!-- Date of Birth -->
                     <div>
-                        <label for="date_of_birth" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Lahir</label>
+                        <label for="date_of_birth" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Tanggal Lahir <span class="text-red-500">*</span>
+                        </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,14 +232,25 @@
                                 name="date_of_birth" 
                                 value="{{ old('date_of_birth') }}"
                                 required 
-                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sidarku-primary focus:border-sidarku-primary transition-all"
+                                onchange="validateField('date_of_birth')"
+                                class="w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-sidarku-primary focus:border-sidarku-primary transition-all {{ $errors->has('date_of_birth') ? 'border-red-300 bg-red-50' : 'border-gray-300' }}"
                             >
                         </div>
+                        @error('date_of_birth')
+                            <p class="mt-2 text-sm text-red-600 flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                                <span>{{ $message }}</span>
+                            </p>
+                        @enderror
                     </div>
 
                     <!-- Password -->
                     <div>
-                        <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                        <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Password <span class="text-red-500">*</span>
+                        </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,8 +262,10 @@
                                 id="password"
                                 name="password" 
                                 required 
-                                class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sidarku-primary focus:border-sidarku-primary transition-all"
+                                minlength="8"
+                                class="w-full pl-10 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-sidarku-primary focus:border-sidarku-primary transition-all {{ $errors->has('password') ? 'border-red-300 bg-red-50' : 'border-gray-300' }}"
                                 placeholder="Minimal 8 karakter"
+                                onkeyup="validatePassword()"
                             >
                             <button 
                                 type="button"
@@ -235,11 +280,24 @@
                                 </svg>
                             </button>
                         </div>
+                        @error('password')
+                            <p class="mt-2 text-sm text-red-600 flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                                <span>{{ $message }}</span>
+                            </p>
+                        @enderror
+                        <p class="mt-1 text-xs text-gray-500" id="password-hint">
+                            Password harus minimal 8 karakter
+                        </p>
                     </div>
 
                     <!-- Confirm Password -->
                     <div>
-                        <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2">Konfirmasi Password</label>
+                        <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Konfirmasi Password <span class="text-red-500">*</span>
+                        </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +309,9 @@
                                 id="password_confirmation"
                                 name="password_confirmation" 
                                 required 
-                                class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-sidarku-primary focus:border-sidarku-primary transition-all"
+                                minlength="8"
+                                onkeyup="validatePasswordConfirmation()"
+                                class="w-full pl-10 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-sidarku-primary focus:border-sidarku-primary transition-all {{ $errors->has('password_confirmation') ? 'border-red-300 bg-red-50' : 'border-gray-300' }}"
                                 placeholder="Ulangi password"
                             >
                             <button 
@@ -267,6 +327,14 @@
                                 </svg>
                             </button>
                         </div>
+                        @error('password_confirmation')
+                            <p class="mt-2 text-sm text-red-600 flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                                <span>{{ $message }}</span>
+                            </p>
+                        @enderror
                     </div>
 
                     <!-- Terms -->
@@ -276,12 +344,21 @@
                             name="terms" 
                             id="terms" 
                             required 
-                            class="w-4 h-4 mt-1 text-sidarku-primary border-gray-300 rounded focus:ring-sidarku-primary"
+                            onchange="validateTerms()"
+                            class="w-4 h-4 mt-1 text-sidarku-primary border-gray-300 rounded focus:ring-sidarku-primary {{ $errors->has('terms') ? 'border-red-300' : '' }}"
                         >
                         <label for="terms" class="ml-2 text-sm text-gray-600">
-                            Saya menyetujui <button type="button" onclick="openTermsModal()" class="text-sidarku-primary hover:text-sidarku-primary-dark font-semibold underline">Syarat & Ketentuan</button>
+                            Saya menyetujui <button type="button" onclick="openTermsModal()" class="text-sidarku-primary hover:text-sidarku-primary-dark font-semibold underline">Syarat & Ketentuan</button> <span class="text-red-500">*</span>
                         </label>
                     </div>
+                    @error('terms')
+                        <p class="mt-2 text-sm text-red-600 flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                            <span>{{ $message }}</span>
+                        </p>
+                    @enderror
 
                     <!-- Submit Button -->
                     <button 
@@ -467,6 +544,233 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeTermsModal();
+            }
+        });
+
+        // Password validation
+        function validatePassword() {
+            const passwordInput = document.getElementById('password');
+            const passwordHint = document.getElementById('password-hint');
+            const password = passwordInput.value;
+            
+            if (password.length > 0 && password.length < 8) {
+                passwordInput.classList.add('border-red-300', 'bg-red-50');
+                passwordInput.classList.remove('border-gray-300');
+                passwordHint.classList.remove('text-gray-500');
+                passwordHint.classList.add('text-red-600', 'font-medium');
+                passwordHint.innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>Password harus minimal 8 karakter. Saat ini: ' + password.length + ' karakter';
+            } else if (password.length >= 8) {
+                passwordInput.classList.remove('border-red-300', 'bg-red-50');
+                passwordInput.classList.add('border-green-300', 'bg-green-50');
+                passwordHint.classList.remove('text-red-600');
+                passwordHint.classList.add('text-green-600', 'font-medium');
+                passwordHint.innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>Password valid (' + password.length + ' karakter)';
+            } else {
+                passwordInput.classList.remove('border-red-300', 'bg-red-50', 'border-green-300', 'bg-green-50');
+                passwordInput.classList.add('border-gray-300');
+                passwordHint.classList.remove('text-red-600', 'text-green-600', 'font-medium');
+                passwordHint.classList.add('text-gray-500');
+                passwordHint.textContent = 'Password harus minimal 8 karakter';
+            }
+        }
+
+        // Validate individual field
+        function validateField(fieldName) {
+            const field = document.getElementById(fieldName);
+            const value = field.value.trim();
+            
+            if (fieldName === 'email') {
+                // Validate email format
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!value) {
+                    field.classList.add('border-red-300', 'bg-red-50');
+                    field.classList.remove('border-gray-300', 'border-green-300', 'bg-green-50');
+                } else if (!emailPattern.test(value)) {
+                    field.classList.add('border-red-300', 'bg-red-50');
+                    field.classList.remove('border-gray-300', 'border-green-300', 'bg-green-50');
+                } else {
+                    field.classList.remove('border-red-300', 'bg-red-50');
+                    field.classList.add('border-green-300', 'bg-green-50');
+                }
+            } else {
+                if (!value) {
+                    field.classList.add('border-red-300', 'bg-red-50');
+                    field.classList.remove('border-gray-300', 'border-green-300', 'bg-green-50');
+                } else {
+                    field.classList.remove('border-red-300', 'bg-red-50');
+                    field.classList.add('border-green-300', 'bg-green-50');
+                }
+            }
+        }
+
+        // Validate password confirmation
+        function validatePasswordConfirmation() {
+            const password = document.getElementById('password').value;
+            const passwordConfirmation = document.getElementById('password_confirmation');
+            const confirmValue = passwordConfirmation.value;
+            
+            if (confirmValue.length > 0) {
+                if (confirmValue !== password) {
+                    passwordConfirmation.classList.add('border-red-300', 'bg-red-50');
+                    passwordConfirmation.classList.remove('border-gray-300');
+                } else {
+                    passwordConfirmation.classList.remove('border-red-300', 'bg-red-50');
+                    passwordConfirmation.classList.add('border-green-300', 'bg-green-50');
+                }
+            } else {
+                passwordConfirmation.classList.remove('border-red-300', 'bg-red-50', 'border-green-300', 'bg-green-50');
+                passwordConfirmation.classList.add('border-gray-300');
+            }
+        }
+
+        // Validate terms checkbox
+        function validateTerms() {
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox.checked) {
+                termsCheckbox.classList.add('border-red-300');
+            } else {
+                termsCheckbox.classList.remove('border-red-300');
+            }
+        }
+
+        // Validate all fields on form submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            let hasError = false;
+            
+            // Validate name
+            const nameInput = document.getElementById('name');
+            if (!nameInput.value.trim()) {
+                nameInput.classList.add('border-red-300', 'bg-red-50');
+                nameInput.focus();
+                hasError = true;
+            }
+            
+            // Validate email
+            const emailInput = document.getElementById('email');
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailInput.value.trim()) {
+                emailInput.classList.add('border-red-300', 'bg-red-50');
+                if (!hasError) {
+                    emailInput.focus();
+                    hasError = true;
+                }
+            } else if (!emailPattern.test(emailInput.value.trim())) {
+                emailInput.classList.add('border-red-300', 'bg-red-50');
+                if (!hasError) {
+                    emailInput.focus();
+                    hasError = true;
+                }
+            }
+            
+            // Validate date of birth
+            const dobInput = document.getElementById('date_of_birth');
+            if (!dobInput.value) {
+                dobInput.classList.add('border-red-300', 'bg-red-50');
+                if (!hasError) {
+                    dobInput.focus();
+                    hasError = true;
+                }
+            }
+            
+            // Validate password
+            const passwordInput = document.getElementById('password');
+            if (!passwordInput.value || passwordInput.value.length < 8) {
+                passwordInput.classList.add('border-red-300', 'bg-red-50');
+                validatePassword();
+                if (!hasError) {
+                    passwordInput.focus();
+                    hasError = true;
+                }
+            }
+            
+            // Validate password confirmation
+            const passwordConfirmation = document.getElementById('password_confirmation');
+            if (!passwordConfirmation.value || passwordConfirmation.value !== passwordInput.value) {
+                passwordConfirmation.classList.add('border-red-300', 'bg-red-50');
+                if (!hasError) {
+                    passwordConfirmation.focus();
+                    hasError = true;
+                }
+            }
+            
+            // Validate terms
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox.checked) {
+                termsCheckbox.classList.add('border-red-300');
+                if (!hasError) {
+                    termsCheckbox.focus();
+                    hasError = true;
+                }
+            }
+            
+            if (hasError) {
+                e.preventDefault();
+                
+                // Create or show error notification
+                let errorNotification = document.getElementById('client-error-notification');
+                if (!errorNotification) {
+                    errorNotification = document.createElement('div');
+                    errorNotification.id = 'client-error-notification';
+                    errorNotification.className = 'mb-6 bg-red-50 border border-red-200 rounded-xl p-4';
+                    errorNotification.innerHTML = `
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-red-800 mb-2">Mohon lengkapi semua field yang wajib diisi!</p>
+                                <ul class="list-disc list-inside space-y-1 text-sm text-red-700" id="client-error-list"></ul>
+                            </div>
+                        </div>
+                    `;
+                    const form = document.querySelector('form');
+                    form.parentNode.insertBefore(errorNotification, form);
+                }
+                
+                // Build error list
+                const errorList = document.getElementById('client-error-list');
+                errorList.innerHTML = '';
+                
+                if (!nameInput.value.trim()) {
+                    errorList.innerHTML += '<li>Nama lengkap wajib diisi</li>';
+                }
+                
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailInput.value.trim()) {
+                    errorList.innerHTML += '<li>Email wajib diisi</li>';
+                } else if (!emailPattern.test(emailInput.value.trim())) {
+                    errorList.innerHTML += '<li>Format email tidak valid</li>';
+                }
+                
+                if (!dobInput.value) {
+                    errorList.innerHTML += '<li>Tanggal lahir wajib diisi</li>';
+                }
+                
+                if (!passwordInput.value || passwordInput.value.length < 8) {
+                    errorList.innerHTML += '<li>Password harus minimal 8 karakter</li>';
+                }
+                
+                if (!passwordConfirmation.value || passwordConfirmation.value !== passwordInput.value) {
+                    errorList.innerHTML += '<li>Konfirmasi password tidak sesuai atau kosong</li>';
+                }
+                
+                if (!termsCheckbox.checked) {
+                    errorList.innerHTML += '<li>Anda harus menyetujui Syarat & Ketentuan</li>';
+                }
+                
+                // Scroll to error notification
+                errorNotification.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Show notification with animation
+                errorNotification.style.opacity = '0';
+                errorNotification.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    errorNotification.style.transition = 'all 0.3s ease';
+                    errorNotification.style.opacity = '1';
+                    errorNotification.style.transform = 'translateY(0)';
+                }, 10);
+                
+                return false;
             }
         });
     </script>
