@@ -63,47 +63,43 @@ class SendTtdReminder extends Command
                 $user->update(['email_ttd_reminder_enabled' => true]);
             }
 
-            // Check if user already checked in today
-            $todayLog = TTDLog::where('user_id', $user->id)
-                ->whereDate('log_date', $today)
+            // Check if user has consumed TTD in the last 7 days (weekly consumption)
+            // TTD is consumed once per week, so if user already consumed in the last 7 days, skip reminder
+            $sevenDaysAgo = $today->copy()->subDays(6); // Include today, so 6 days ago + today = 7 days
+            $recentConsumption = TTDLog::where('user_id', $user->id)
                 ->where('is_consumed', true)
+                ->whereDate('log_date', '>=', $sevenDaysAgo)
+                ->orderBy('log_date', 'desc')
                 ->first();
 
-            if ($todayLog) {
-                $this->logReminder($user, 'skipped', 'User already checked in today', false);
-                $skippedCount++;
-                $this->line("  → Skipped {$user->name}: Already checked in today");
-                continue;
-            }
-
-            // Check if user is menstruating (intensive reminder - send daily)
-            $isMenstruating = $this->isUserMenstruating($user, $today);
-            
-            // If menstruating, send reminder daily
-            // If not menstruating, send reminder weekly (7 days since last consumption)
-            if ($isMenstruating || $this->isWeeklyReminderTime($user, $today)) {
-                $this->sendReminder($user, $isMenstruating);
-                $this->logReminder($user, 'sent', null, $isMenstruating);
-                $reminderCount++;
-                $this->line("  → Reminder sent to {$user->name} ({$user->email})" . ($isMenstruating ? ' [Intensive]' : ''));
-            } else {
-                $lastLog = TTDLog::where('user_id', $user->id)
-                    ->where('is_consumed', true)
-                    ->orderBy('log_date', 'desc')
-                    ->first();
+            if ($recentConsumption) {
+                // User already consumed TTD within the last 7 days, skip reminder
+                $consumptionDate = Carbon::parse($recentConsumption->log_date)->setTime(0, 0, 0);
+                $todayStart = $today->copy()->setTime(0, 0, 0);
+                $daysSince = (int) $todayStart->diffInDays($consumptionDate, false);
                 
-                $reason = 'Not time for reminder yet';
-                if ($lastLog) {
-                    $daysSince = Carbon::parse($lastLog->log_date)->diffInDays($today);
-                    $reason = "Last consumption {$daysSince} days ago (need 7 days)";
+                if ($daysSince == 0) {
+                    $reason = "Sudah minum TTD hari ini";
+                } elseif ($daysSince == 1) {
+                    $reason = "Sudah minum TTD kemarin (dalam 7 hari terakhir)";
                 } else {
-                    $reason = 'No previous consumption';
+                    $reason = "Sudah minum TTD {$daysSince} hari yang lalu (dalam 7 hari terakhir)";
                 }
                 
                 $this->logReminder($user, 'skipped', $reason, false);
                 $skippedCount++;
                 $this->line("  → Skipped {$user->name}: {$reason}");
+                continue;
             }
+
+            // User hasn't consumed TTD in the last 7 days, send reminder
+            // Check if user is menstruating (for logging purposes, but same reminder logic)
+            $isMenstruating = $this->isUserMenstruating($user, $today);
+            
+            $this->sendReminder($user, $isMenstruating);
+            $this->logReminder($user, 'sent', null, $isMenstruating);
+            $reminderCount++;
+            $this->line("  → Reminder sent to {$user->name} ({$user->email})" . ($isMenstruating ? ' [Menstruating]' : ''));
         }
 
         $this->info("Sent {$reminderCount} reminders.");
@@ -114,26 +110,6 @@ class SendTtdReminder extends Command
         return Command::SUCCESS;
     }
 
-    /**
-     * Check if it's time for weekly reminder (7 days since last consumption)
-     */
-    protected function isWeeklyReminderTime(User $user, Carbon $today): bool
-    {
-        $lastLog = TTDLog::where('user_id', $user->id)
-            ->where('is_consumed', true)
-            ->orderBy('log_date', 'desc')
-            ->first();
-
-        if (!$lastLog) {
-            // No previous log, send reminder
-            return true;
-        }
-
-        $daysSinceLastConsumption = Carbon::parse($lastLog->log_date)->diffInDays($today);
-        
-        // Send reminder if 7 days have passed (weekly consumption)
-        return $daysSinceLastConsumption >= 7;
-    }
 
     /**
      * Check if user is currently menstruating

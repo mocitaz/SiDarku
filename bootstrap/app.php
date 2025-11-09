@@ -10,6 +10,19 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule): void {
+        // Schedule TTD reminder to run twice weekly (Monday & Thursday) at 12:00 WIB
+        // 1 = Monday, 4 = Thursday
+        $schedule->command('ttd:remind')
+            ->weeklyOn(1, '12:00') // Senin jam 12:00
+            ->timezone('Asia/Jakarta')
+            ->withoutOverlapping();
+            
+        $schedule->command('ttd:remind')
+            ->weeklyOn(4, '12:00') // Kamis jam 12:00
+            ->timezone('Asia/Jakarta')
+            ->withoutOverlapping();
+    })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,

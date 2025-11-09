@@ -16,7 +16,7 @@
                 </div>
                 <div>
                     <h3 class="text-xs font-semibold text-gray-900">Status Reminder Email TTD</h3>
-                    <p class="text-[10px] text-gray-500 mt-0.5">Otomatis setiap hari pukul <span class="font-medium text-pink-600">12:00 WIB</span></p>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Otomatis 2x seminggu (<span class="font-medium">Senin & Kamis</span>) pukul <span class="font-medium text-pink-600">12:00 WIB</span></p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">

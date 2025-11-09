@@ -494,7 +494,8 @@ class AdminController extends Controller
         Carbon::setLocale('id');
         $now = Carbon::now('Asia/Jakarta');
         $today = Carbon::today('Asia/Jakarta');
-        $scheduledTime = Carbon::today('Asia/Jakarta')->setTime(12, 0, 0); // 12:00 WIB
+        $scheduledHour = 12;
+        $scheduledMinute = 0;
 
         // Check today's logs
         $todayLogs = TtdReminderLog::whereDate('reminder_date', $today)->get();
@@ -505,49 +506,51 @@ class AdminController extends Controller
         // Check if already sent today
         $alreadySent = $todaySent > 0;
 
-        // Check if it's time to send
-        $isTimeToSend = $now->greaterThanOrEqualTo($scheduledTime);
-        $isBeforeSchedule = $now->lessThan($scheduledTime);
+        // Get current day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+        $currentDayOfWeek = $now->dayOfWeek; // 1 = Monday, 4 = Thursday
+        $isMonday = $currentDayOfWeek === Carbon::MONDAY;
+        $isThursday = $currentDayOfWeek === Carbon::THURSDAY;
+        $isScheduledDay = $isMonday || $isThursday;
 
-        // Calculate time until next send
-        $timeUntilSend = null;
-        $countdown = null;
-        
-        // Determine next scheduled time
-        if ($alreadySent) {
-            // If already sent today, calculate countdown to tomorrow's scheduled time
-            $nextScheduledTime = $scheduledTime->copy()->addDay();
-        } else {
-            // If not sent yet, calculate countdown to today's scheduled time
-            if ($isTimeToSend) {
-                // If it's past 12:00 but not sent yet, countdown to tomorrow
-                $nextScheduledTime = $scheduledTime->copy()->addDay();
-            } else {
-                // Before 12:00, countdown to today's scheduled time
-                $nextScheduledTime = $scheduledTime;
-            }
+        // Get today's scheduled time if it's a scheduled day
+        $todayScheduledTime = null;
+        if ($isScheduledDay) {
+            $todayScheduledTime = $today->copy()->setTime($scheduledHour, $scheduledMinute, 0);
         }
+
+        // Determine next scheduled time (Monday or Thursday at 12:00)
+        $nextScheduledTime = $this->getNextScheduledTime($now, $isScheduledDay, $todayScheduledTime, $alreadySent);
+
+        // Check if it's time to send today
+        $isTimeToSend = false;
+        $isBeforeSchedule = false;
         
-        // Always calculate countdown
-        $diff = $now->diff($nextScheduledTime);
+        if ($isScheduledDay && $todayScheduledTime) {
+            $isTimeToSend = $now->greaterThanOrEqualTo($todayScheduledTime) && !$alreadySent;
+            $isBeforeSchedule = $now->lessThan($todayScheduledTime);
+        }
+
+        // Calculate countdown to next scheduled time
         $totalSeconds = $now->diffInSeconds($nextScheduledTime, false);
-        
-        // Convert to hours, minutes, seconds
         $hours = floor($totalSeconds / 3600);
         $minutes = floor(($totalSeconds % 3600) / 60);
         $seconds = $totalSeconds % 60;
-        
+
         $countdown = [
-            'hours' => str_pad($hours, 2, '0', STR_PAD_LEFT),
-            'minutes' => str_pad($minutes, 2, '0', STR_PAD_LEFT),
-            'seconds' => str_pad($seconds, 2, '0', STR_PAD_LEFT),
-            'total_seconds' => $totalSeconds,
+            'hours' => str_pad(max(0, $hours), 2, '0', STR_PAD_LEFT),
+            'minutes' => str_pad(max(0, $minutes), 2, '0', STR_PAD_LEFT),
+            'seconds' => str_pad(max(0, $seconds), 2, '0', STR_PAD_LEFT),
+            'total_seconds' => max(0, $totalSeconds),
         ];
-        
-        if ($isBeforeSchedule) {
-            $timeUntilSend = $now->diffForHumans($scheduledTime, true);
-        } elseif (!$alreadySent && $isTimeToSend) {
+
+        $timeUntilSend = null;
+        if ($isBeforeSchedule && $isScheduledDay) {
+            $timeUntilSend = $now->diffForHumans($todayScheduledTime, true);
+        } elseif ($isTimeToSend) {
             $timeUntilSend = 'Sudah waktunya!';
+        } else {
+            $nextDayName = $nextScheduledTime->locale('id')->isoFormat('dddd');
+            $timeUntilSend = $now->diffForHumans($nextScheduledTime, true) . " ({$nextDayName})";
         }
 
         // Get last sent time
@@ -558,16 +561,24 @@ class AdminController extends Controller
 
         // Calculate next scheduled datetime in ISO format for JavaScript
         $nextScheduledDatetime = $nextScheduledTime->copy()->setTimezone('Asia/Jakarta');
-        
+        $nextDayName = $nextScheduledTime->locale('id')->isoFormat('dddd');
+        $todayDayName = $now->locale('id')->isoFormat('dddd');
+
         $status = [
             'current_time' => $now->format('H:i:s'),
             'current_date' => $now->format('d M Y'),
-            'scheduled_time' => $scheduledTime->format('H:i'),
-            'scheduled_datetime' => $scheduledTime->copy()->setTimezone('Asia/Jakarta')->toIso8601String(),
+            'scheduled_time' => sprintf('%02d:%02d', $scheduledHour, $scheduledMinute),
+            'scheduled_days' => 'Senin & Kamis',
+            'next_scheduled_day' => $nextDayName,
+            'next_scheduled_date' => $nextScheduledTime->format('d M Y'),
+            'scheduled_datetime' => $isScheduledDay && $todayScheduledTime 
+                ? $todayScheduledTime->copy()->setTimezone('Asia/Jakarta')->toIso8601String() 
+                : null,
             'next_scheduled_datetime' => $nextScheduledDatetime->toIso8601String(),
             'timezone' => 'WIB (Asia/Jakarta)',
             'is_time_to_send' => $isTimeToSend,
             'is_before_schedule' => $isBeforeSchedule,
+            'is_scheduled_day' => $isScheduledDay,
             'already_sent' => $alreadySent,
             'time_until_send' => $timeUntilSend,
             'countdown' => $countdown,
@@ -575,25 +586,66 @@ class AdminController extends Controller
             'today_skipped' => $todaySkipped,
             'today_disabled' => $todayDisabled,
             'last_sent_at' => $lastSent ? $lastSent->created_at->setTimezone('Asia/Jakarta')->format('H:i:s') : null,
-            'message' => $this->getStatusMessage($alreadySent, $isTimeToSend, $isBeforeSchedule, $timeUntilSend, $todaySent),
+            'message' => $this->getStatusMessage($alreadySent, $isTimeToSend, $isBeforeSchedule, $timeUntilSend, $todaySent, $isScheduledDay, $todayDayName, $nextDayName),
         ];
 
         return $status;
     }
 
     /**
+     * Get next scheduled time (Monday or Thursday at 12:00)
+     */
+    private function getNextScheduledTime(Carbon $now, bool $isScheduledDay, ?Carbon $todayScheduledTime, bool $alreadySent): Carbon
+    {
+        $scheduledHour = 12;
+        $scheduledMinute = 0;
+        $currentDayOfWeek = $now->dayOfWeek;
+        
+        // If today is a scheduled day
+        if ($isScheduledDay && $todayScheduledTime) {
+            // If already sent today, or past 12:00, get next scheduled day
+            if ($alreadySent || $now->greaterThanOrEqualTo($todayScheduledTime)) {
+                // Get next scheduled day
+                if ($currentDayOfWeek === Carbon::MONDAY) {
+                    // Next is Thursday (3 days later)
+                    return $now->copy()->addDays(3)->setTime($scheduledHour, $scheduledMinute, 0);
+                } else { // Thursday
+                    // Next is Monday (4 days later)
+                    return $now->copy()->addDays(4)->setTime($scheduledHour, $scheduledMinute, 0);
+                }
+            } else {
+                // Before 12:00 today, next is today
+                return $todayScheduledTime;
+            }
+        }
+        
+        // Today is not a scheduled day, find next Monday or Thursday
+        $nextMonday = $now->copy()->next(Carbon::MONDAY)->setTime($scheduledHour, $scheduledMinute, 0);
+        $nextThursday = $now->copy()->next(Carbon::THURSDAY)->setTime($scheduledHour, $scheduledMinute, 0);
+        
+        // Return the closer one
+        if ($nextMonday->lessThan($nextThursday)) {
+            return $nextMonday;
+        } else {
+            return $nextThursday;
+        }
+    }
+
+    /**
      * Get status message
      */
-    private function getStatusMessage($alreadySent, $isTimeToSend, $isBeforeSchedule, $timeUntilSend, $todaySent)
+    private function getStatusMessage($alreadySent, $isTimeToSend, $isBeforeSchedule, $timeUntilSend, $todaySent, $isScheduledDay, $todayDayName, $nextDayName)
     {
-        if ($alreadySent) {
-            return "Hari ini sudah terkirim {$todaySent} email reminder pada jam 12:00 WIB. Sistem akan mengirim lagi besok pada jam yang sama.";
-        } elseif ($isTimeToSend) {
+        if ($alreadySent && $isScheduledDay) {
+            return "Hari ini ({$todayDayName}) sudah terkirim {$todaySent} email reminder pada jam 12:00 WIB. Sistem akan mengirim lagi pada {$nextDayName} jam 12:00 WIB.";
+        } elseif ($isTimeToSend && $isScheduledDay) {
             return "Sistem akan mengirim reminder otomatis pada jam 12:00 WIB. Email akan terkirim dalam beberapa saat.";
-        } elseif ($isBeforeSchedule) {
-            return "Email reminder akan dikirim otomatis oleh sistem pada jam 12:00 WIB. Silakan tunggu sampai waktu yang ditentukan.";
+        } elseif ($isBeforeSchedule && $isScheduledDay) {
+            return "Email reminder akan dikirim otomatis oleh sistem hari ini ({$todayDayName}) pada jam 12:00 WIB. Silakan tunggu sampai waktu yang ditentukan.";
+        } elseif ($isScheduledDay) {
+            return "Hari ini adalah hari schedule ({$todayDayName}). Email reminder akan dikirim otomatis pada jam 12:00 WIB.";
         } else {
-            return "Status reminder sedang dicek...";
+            return "Email reminder akan dikirim otomatis pada {$nextDayName} jam 12:00 WIB. Sistem mengirim reminder 2 kali seminggu (Senin & Kamis).";
         }
     }
 
